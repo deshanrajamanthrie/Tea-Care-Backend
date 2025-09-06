@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tea Leaf Disease Classifier</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 40px;
+        background: #f5f9f6;
+      }
+      h1 {
+        color: #2e7d32;
+      }
+      .result {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🍃 Tea Leaf Disease Classifier</h1>
+    <input type="file" id="fileInput" accept="image/*" />
+    <button onclick="uploadImage()">Predict</button>
+
+    <div class="result" id="result"></div>
+
+    <script>
+      async function uploadImage() {
+        const fileInput = document.getElementById("fileInput");
+        if (!fileInput.files[0]) {
+          document.getElementById("result").innerText =
+            "⚠️ Please select a file.";
+          return;
+        }
+
+        let formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+          if (data.prediction) {
+            document.getElementById("result").innerText =
+              "✅ Predicted Disease: " + data.prediction;
+          } else {
+            document.getElementById("result").innerText =
+              "❌ Error: " + (data.error || "Unknown error");
+          }
+        } catch (err) {
+          document.getElementById("result").innerText =
+            "❌ Error connecting to API.";
+        }
+      }
+    </script>
+  </body>
+</html>
