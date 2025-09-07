@@ -13,21 +13,18 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto): Promise<{ message: string; user: Partial<User> }> {
     const { email, password, firstName, lastName, address, contactNumber, language } = registerDto;
-
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({ where: { email } });
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
-
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
     // Create new user
     const user = this.userRepository.create({
       email,
@@ -40,8 +37,6 @@ export class AuthService {
     });
 
     const savedUser = await this.userRepository.save(user);
-
-    // Remove password from response
     const { password: _, ...userWithoutPassword } = savedUser;
 
     return {
@@ -52,7 +47,7 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userRepository.findOne({ where: { email } });
-    
+
     if (user && await bcrypt.compare(password, user.password)) {
       const { password: _, ...result } = user;
       return result as User;
@@ -62,7 +57,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<{ message: string; user: Partial<User>; access_token: string }> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
-    
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
